@@ -197,7 +197,7 @@ args="-append \"rw earlyprintk loglevel=8 console=ttyAMA0,115200 dwc_otg.lpm_ena
 args="-netdev user,id=net0,hostfwd=tcp::2222-:22 -device usb-net,netdev=net0 $args"
 args="-drive file=$image,if=sd,format=raw,index=0,media=disk $args"
 args="-cpu cortex-a72 -smp 4 $args"
-case "$machine_type" in
+case "$machine" in
   'rpi-3b+')
     tmp_kernel="$(sudo mktemp --tmpdir="/tmp" piqemu-kernel.XXXXXXX)"
     sudo cp "$sysroot/boot/kernel8.img" "$kernel"
@@ -206,7 +206,7 @@ case "$machine_type" in
     args="-machine raspi3b -dtb $tmp_dtb -kernel $tmp_kernel -m 1G $args"
     ;;
   *)
-    echo "Error: unsupported machine type $machine_type"
+    echo "Error: unsupported machine type $machine"
     return 1
     ;;
 esac
