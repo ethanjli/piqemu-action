@@ -129,8 +129,8 @@ build_bookworm_rpi_3b_plus_dtb() {
   sudo cp "$build_result" "$output"
 
   # Clean up
-  rm "$build_result"
-  rm "$tmp_script"
+  sudo rm "$build_result"
+  sudo rm "$tmp_script"
 }
 
 image="$1" # e.g. "rpi-os-image.img"
