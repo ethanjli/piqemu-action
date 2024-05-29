@@ -1,0 +1,76 @@
+name: "Run PiQEMU"
+author: ethanjli
+description: Uses QEMU to run commands in a VM on a Raspberry Pi SD card image.
+branding:
+  icon: box
+  color: red
+
+inputs:
+  image:
+    description: Path of the image for the virtual machine
+    required: true
+  machine:
+    description:
+      The type of Raspberry Pi for the virtual machine to emulate.
+      Currently only `rpi-3b+` is allowed.
+    required: true
+  args:
+    description: Options/args to pass to `qemu-system-aarch64`
+    required: false
+  shell:
+    description: The shell to use for running commands.
+    required: false
+  run:
+    description: Commands to run in the shell.
+    required: false
+  user:
+    description: The user to run commands as.
+    required: false
+    default: root
+  run-service:
+    description:
+      The systemd service to use for running `shell` with the `run` commands.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Install dependencies for PiQEMU
+      shell: bash
+      run: |
+        is_installed() {
+          apt-cache policy "$1" | grep 'Installed:' | grep -v '(none)' > /dev/null
+        }
+
+        packages=""
+        if ! is_installed systemd-container; then
+          packages="$packages systemd-container"
+        fi
+        if ! is_installed qemu-user-static; then
+          packages="$packages qemu-user-static"
+        fi
+        if ! is_installed binfmt-support; then
+          packages="$packages binfmt-support"
+        fi
+        if ! is_installed qemu-system-aarch64; then
+          packages="$packages qemu-system-aarch64"
+        fi
+        if [ ! -z "$(echo "$packages")" ]; then
+          echo "Installing dependencies to run systemd-nspawn and QEMU on non-amd64 images..."
+          sudo apt-get update
+          sudo apt-get install $packages
+        fi
+
+    - name: Run PiQEMU
+      id: run-piqemu
+      shell: bash
+      env:
+        INPUT_IMAGE: ${{ inputs.image }}
+        INPUT_MACHINE: ${{ inputs.machine }}
+        INPUT_ARGS: ${{ inputs.args }}
+        INPUT_SHELL: ${{ inputs.shell }}
+        INPUT_RUN: ${{ inputs.run }}
+        INPUT_USER: ${{ inputs.user }}
+        INPUT_RUN_SERVICE: ${{ inputs.run-service }}
+      run: |
+        ${{ github.action_path }}/gha-wrapper-piqemu.sh

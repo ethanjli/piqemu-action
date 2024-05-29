@@ -1,0 +1,84 @@
+name: build-os
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+  merge_group:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Test VMs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download and cache base image
+        id: download-base
+        uses: ethanjli/cached-download-action@v0.1.1
+        with:
+          url: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64-lite.img.xz
+          destination: /tmp/2024-03-15-raspios-bookworm-arm64-lite.img.xz
+
+      - name: Grow the image
+        id: grow-image
+        uses: ethanjli/pigrow-action@v0.1.1
+        with:
+          image: ${{ steps.download-base.outputs.destination }}
+          destination: rpi-os-image.img
+          mode: to
+          size: 8G
+
+      # Run shell commands in a booted container
+
+      - name: Analyze systemd boot process
+        uses: ./
+        with:
+          image: rpi-os-image.img
+          machine: rpi-3b+
+          run: |
+            while ! systemd-analyze 2>/dev/null; do
+              echo "Waiting for boot to finish..."
+              sleep 5
+            done
+            systemd-analyze critical-chain | cat
+            systemd-analyze blame | cat
+            systemd-analyze plot > /run/external/bootup-timeline.svg
+            echo "Done!"
+
+      - name: Extract the bootup timeline from the VM
+        uses: ethanjli/pinspawn-action@v0.1.1
+        with:
+          image: rpi-os-image.img
+          args: --bind "$(pwd)":/run/external
+          run: |
+            mv /var/lib/bootup-timeline.svg /run/external/bootup-timeline.svg
+
+      - name: Upload the bootup timeline to Job Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bootup-timeline
+          path: bootup-timeline.svg
+          if-no-files-found: error
+          overwrite: true
+
+      # Run shell commands as the pi user in a booted container
+
+      - name: Run as user in booted container
+        uses: ./
+        with:
+          image: rpi-os-image.img
+          machine: rpi-3b+
+          run: |
+            /usr/games/cowsay "I am $USER!"
+            if [ "$USER" != "pi" ]; then
+              exit 666
+            fi
