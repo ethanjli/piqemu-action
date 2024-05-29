@@ -200,7 +200,7 @@ args="-cpu cortex-a72 -smp 4 $args"
 case "$machine" in
   'rpi-3b+')
     tmp_kernel="$(sudo mktemp --tmpdir="/tmp" piqemu-kernel.XXXXXXX)"
-    sudo cp "$sysroot/boot/kernel8.img" "$kernel"
+    sudo cp "$sysroot/boot/kernel8.img" "$tmp_kernel"
     tmp_dtb="$(sudo mktemp --tmpdir="/tmp" piqemu-dtb.XXXXXXX)"
     build_bookworm_rpi_3b_plus_dtb "$sysroot" "$tmp_dtb"
     args="-machine raspi3b -dtb $tmp_dtb -kernel $tmp_kernel -m 1G $args"
