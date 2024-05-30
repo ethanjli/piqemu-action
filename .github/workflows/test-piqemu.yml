@@ -56,7 +56,7 @@ jobs:
             echo "Done!"
 
       - name: Extract the bootup timeline from the VM
-        uses: ethanjli/pinspawn-action@v0.1.1
+        uses: ethanjli/pinspawn-action@v0.1.2
         with:
           image: rpi-os-image.img
           args: --bind "$(pwd)":/run/external
@@ -100,7 +100,7 @@ jobs:
             figlet -f digital "I am $USER in $SHELL!"
 
       - name: Copy the script into the image
-        uses: ethanjli/pinspawn-action@v0.1.1
+        uses: ethanjli/pinspawn-action@v0.1.2
         with:
           image: rpi-os-image.img
           args: --bind "$(pwd)":/run/external
@@ -117,7 +117,7 @@ jobs:
           shell: /usr/bin/setup-figlet.sh
 
       - name: Delete the script from the image
-        uses: ethanjli/pinspawn-action@v0.1.1
+        uses: ethanjli/pinspawn-action@v0.1.2
         with:
           image: rpi-os-image.img
           run: rm /usr/bin/setup-figlet.sh
@@ -127,7 +127,7 @@ jobs:
       # Note: we use systemd-nspawn (via ethanjli/pinspawn) instead of QEMU to install Docker
       # because the installation process is much slower on a QEMU VM!
       - name: Install Docker
-        uses: ethanjli/pinspawn-action@v0.1.1
+        uses: ethanjli/pinspawn-action@v0.1.2
         with:
           image: rpi-os-image.img
           run: |
