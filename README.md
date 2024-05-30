@@ -14,7 +14,7 @@ GitHub action (which you can use as a very similar substitute substitute for thi
 
 Note: the system in the VM will shut down after the specified commands finish running.
 
-### Run shell commands in a booted RPi 3B+ VM
+### Run shell commands as root
 
 ```yaml
 - name: Analyze systemd boot process
@@ -49,9 +49,60 @@ Note: the system in the VM will shut down after the specified commands finish ru
     overwrite: true
 ```
 
+### Run shell commands as a non-root user
+
+```yaml
+- name: Run as user pi in booted container
+  uses: ./
+  with:
+    image: rpi-os-image.img
+    machine: rpi-3b+
+    user: pi
+    run: |
+      set -eux
+      sudo apt-get update
+      sudo apt-get install -y cowsay
+      /usr/games/cowsay "I am $USER!"
+```
+
 ### Interact with Docker in a booted RPi 3B+ VM
 
-TODO
+```yaml
+- name: Install Docker and pull a container
+  uses: ./
+  with:
+    image: rpi-os-image.img
+    machine: rpi-3b+
+    user: pi
+    run: |
+      # Install Docker:
+      sudo apt-get update
+      sudo apt-get install ca-certificates curl
+      sudo install -m 0755 -d /etc/apt/keyrings
+      sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+      sudo chmod a+r /etc/apt/keyrings/docker.asc
+      echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      sudo apt-get update
+      sudo apt-get install \
+        docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+      # Pre-download a container:
+      sudo docker pull cgr.dev/chainguard/crane:latest
+
+- name: Run pre-downloaded container
+  uses: ./
+  with:
+    image: rpi-os-image.img
+    machine: rpi-3b+
+    user: pi
+    run: |
+      sudo docker images cgr.dev/chainguard/crane
+      sudo docker run --pull=never --rm cgr.dev/chainguard/crane:latest \
+        manifest cgr.dev/chainguard/crane:latest --platform=linux/amd64
+```
 
 ### Run setup scripts from an external source in a booted RPi 3B+ VM
 
