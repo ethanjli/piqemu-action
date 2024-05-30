@@ -7,7 +7,7 @@ you probably don't need to use this action; instead, you can perform those opera
 `systemd-nspawn` container (or even just a chroot) attached to your image, which will be much
 simpler, easier, and faster, e.g. using the
 [`ethanjli/pinspawn-action`](https://github.com/ethanjli/pinspawn-action)
-GitHub action (which you can use as a very similar substitute substitute for this action) or the
+GitHub action (which you can use as a very similar substitute for this action) or the
 [`Nature40/pimod`](https://github.com/Nature40/pimod) GitHub action.
 
 ## Basic Usage Examples
@@ -64,7 +64,44 @@ Note: the system in the VM will shut down after the specified commands finish ru
       /usr/games/cowsay "I am $USER!"
 ```
 
-### Interact with Docker in a booted RPi 3B+ VM
+### Run an external script directly
+
+```yaml
+- name: Make a script on the host
+  uses: 1arp/create-a-file-action@0.4.5
+  with:
+    file: setup-figlet.sh
+    content: |
+      #!/usr/bin/env -S bash -eux
+      sudo apt-get update
+      sudo apt-get install -y figlet
+      figlet -f digital "I am $USER in $SHELL!"
+
+- name: Copy the script into the image
+  uses: ethanjli/pinspawn-action@v0.1.1
+  with:
+    image: rpi-os-image.img
+    args: --bind "$(pwd)":/run/external
+    run: |
+      sudo cp /run/external/setup-figlet.sh /usr/bin/setup-figlet.sh
+      sudo chmod a+x /usr/bin/setup-figlet.sh
+
+- name: Run script directly
+  uses: ./
+  with:
+    image: rpi-os-image.img
+    machine: rpi-3b+
+    user: pi
+    shell: /usr/bin/setup-figlet.sh
+
+- name: Delete the script from the image
+  uses: ethanjli/pinspawn-action@v0.1.1
+  with:
+    image: rpi-os-image.img
+    run: rm /usr/bin/setup-figlet.sh
+```
+
+### Interact with Docker in the booted VM
 
 Note: we use systemd-nspawn (via ethanjli/pinspawn) instead of QEMU to install Docker because the
 installation process is much slower on a QEMU VM!
@@ -106,10 +143,6 @@ installation process is much slower on a QEMU VM!
       docker run --pull=never --rm cgr.dev/chainguard/crane:latest \
         manifest cgr.dev/chainguard/crane:latest --platform=linux/amd64
 ```
-
-### Run setup scripts from an external source in a booted RPi 3B+ VM
-
-TODO
 
 ## Usage Options
 

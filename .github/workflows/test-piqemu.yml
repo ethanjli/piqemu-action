@@ -71,7 +71,7 @@ jobs:
           if-no-files-found: error
           overwrite: true
 
-      # Run shell commands as the pi user
+      # Run shell commands as a non-root user
 
       - name: Run as user in booted container
         uses: ./
@@ -86,6 +86,41 @@ jobs:
             if [ "$USER" != "pi" ]; then
               exit 666
             fi
+
+      # Run an external script directly
+
+      - name: Make a script on the host
+        uses: 1arp/create-a-file-action@0.4.5
+        with:
+          file: setup-figlet.sh
+          content: |
+            #!/usr/bin/env -S bash -eux
+            sudo apt-get update
+            sudo apt-get install -y figlet
+            figlet -f digital "I am $USER in $SHELL!"
+
+      - name: Copy the script into the image
+        uses: ethanjli/pinspawn-action@v0.1.1
+        with:
+          image: rpi-os-image.img
+          args: --bind "$(pwd)":/run/external
+          run: |
+            sudo cp /run/external/setup-figlet.sh /usr/bin/setup-figlet.sh
+            sudo chmod a+x /usr/bin/setup-figlet.sh
+
+      - name: Run script directly
+        uses: ./
+        with:
+          image: rpi-os-image.img
+          machine: rpi-3b+
+          user: pi
+          shell: /usr/bin/setup-figlet.sh
+
+      - name: Delete the script from the image
+        uses: ethanjli/pinspawn-action@v0.1.1
+        with:
+          image: rpi-os-image.img
+          run: rm /usr/bin/setup-figlet.sh
 
       # Interact with Docker
 
