@@ -196,8 +196,8 @@ sudo systemd-nspawn --directory "$sysroot" --quiet \
 tmp_default_target="$(sudo mktemp --tmpdir="$sysroot/var/lib" piqemu-default-target.XXXXXXX)"
 sudo systemd-nspawn --directory "$sysroot" --quiet \
   bash -c "systemctl get-default | sudo tee \"${tmp_default_target#"$sysroot"}\" > /dev/null"
-sudo rm "$tmp_default_target"
 default_target="$(cat "$tmp_default_target")"
+sudo rm "$tmp_default_target"
 if [ "$default_target" == "graphical.target" ]; then
   sudo systemd-nspawn --directory "$sysroot" --quiet \
     systemctl set-default multi-user.target
