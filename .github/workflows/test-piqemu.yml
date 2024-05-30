@@ -52,7 +52,7 @@ jobs:
             done
             systemd-analyze critical-chain | cat
             systemd-analyze blame | cat
-            systemd-analyze plot > /run/external/bootup-timeline.svg
+            systemd-analyze plot > /var/lib/bootup-timeline.svg
             echo "Done!"
 
       - name: Extract the bootup timeline from the VM
