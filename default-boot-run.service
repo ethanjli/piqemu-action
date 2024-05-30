@@ -6,6 +6,8 @@ After=getty.target
 Type=exec
 ExecStart=bash -c "\
   su - {user} -c '{command}; echo $? | tee {result}'; \
+  echo 'Result in {result}:'
+  cat {result}; \
   echo Shutting down...; \
   shutdown now \
 " &
