@@ -257,7 +257,7 @@ sudo systemd-nspawn --directory "$sysroot" --quiet \
 sudo rm -f "$boot_tmp_service"
 
 # Check the return code of the shell script
-if [ ! -f "$boot_tmp_result" ]; then
+if [ ! "$(sudo cat "$boot_tmp_result" > /dev/null)" ]; then
   echo "Error: $boot_run_service did not store a result indicating success/failure!"
   exit 1
 elif [ "$(sudo cat "$boot_tmp_result")" != "0" ]; then
