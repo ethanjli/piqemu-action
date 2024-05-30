@@ -196,7 +196,7 @@ sudo systemd-nspawn --directory "$sysroot" --quiet \
 tmp_default_target="$(sudo mktemp --tmpdir="$sysroot/var/lib" piqemu-default-target.XXXXXXX)"
 sudo systemd-nspawn --directory "$sysroot" --quiet \
   bash -c "systemctl get-default | sudo tee \"${tmp_default_target#"$sysroot"}\" > /dev/null"
-default_target="$(cat "$tmp_default_target")"
+default_target="$(sudo cat "$tmp_default_target")"
 sudo rm "$tmp_default_target"
 if [ "$default_target" == "graphical.target" ]; then
   sudo systemd-nspawn --directory "$sysroot" --quiet \
@@ -207,7 +207,8 @@ fi
 tmp_userconfig_enabled="$(sudo mktemp --tmpdir="$sysroot/var/lib" piqemu-userconfig-enabled.XXXXXXX)"
 sudo systemd-nspawn --directory "$sysroot" --quiet \
   bash -c "systemctl is-enabled userconfig.service | sudo tee \"${tmp_userconfig_enabled#"$sysroot"}\" > /dev/null || true"
-userconfig_enabled="$(cat "$tmp_userconfig_enabled")"
+userconfig_enabled="$(sudo cat "$tmp_userconfig_enabled")"
+sudo rm "$tmp_userconfig_enabled"
 if [[ "$userconfig_enabled" != "not-found" && "$userconfig_enabled" != masked* ]]; then
   sudo systemd-nspawn --directory "$sysroot" --quiet \
     systemctl mask userconfig.service
