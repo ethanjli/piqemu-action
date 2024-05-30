@@ -79,6 +79,8 @@ jobs:
           image: rpi-os-image.img
           machine: rpi-3b+
           run: |
+            sudo apt-get update
+            sudo apt-get install -y cowsay
             /usr/games/cowsay "I am $USER!"
             if [ "$USER" != "pi" ]; then
               exit 666
