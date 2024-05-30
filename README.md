@@ -53,7 +53,7 @@ Note: the system in the VM will shut down after the specified commands finish ru
 
 ```yaml
 - name: Run as user pi in booted container
-  uses: ./
+  uses: ethanjli/piqemu-action@v0.1.0
   with:
     image: rpi-os-image.img
     machine: rpi-3b+
@@ -66,14 +66,15 @@ Note: the system in the VM will shut down after the specified commands finish ru
 
 ### Interact with Docker in a booted RPi 3B+ VM
 
+Note: we use systemd-nspawn (via ethanjli/pinspawn) instead of QEMU to install Docker because the
+installation process is much slower on a QEMU VM!
+
 ```yaml
-- name: Install Docker and pull a container
-  uses: ./
+- name: Install Docker
+  uses: ethanjli/pinspawn-action@v0.1.1
   with:
     image: rpi-os-image.img
-    machine: rpi-3b+
     run: |
-      # Install Docker:
       export DEBIAN_FRONTEND=noninteractive
       apt-get update
       apt-get install -y ca-certificates curl
@@ -88,11 +89,15 @@ Note: the system in the VM will shut down after the specified commands finish ru
       apt-get install -y \
         docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-      # Pre-download a container:
-      sudo docker pull cgr.dev/chainguard/crane:latest
+- name: Pull a container with Docker
+  uses: ethanjli/piqemu-action@v0.1.0
+  with:
+    image: rpi-os-image.img
+    machine: rpi-3b+
+    run: docker pull cgr.dev/chainguard/crane:latest
 
 - name: Run pre-downloaded container
-  uses: ./
+  uses: ethanjli/piqemu-action@v0.1.0
   with:
     image: rpi-os-image.img
     machine: rpi-3b+

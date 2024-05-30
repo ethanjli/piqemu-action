@@ -89,13 +89,13 @@ jobs:
 
       # Interact with Docker
 
-      - name: Install Docker and pull a container
-        uses: ./
+      # Note: we use systemd-nspawn (via ethanjli/pinspawn) instead of QEMU to install Docker
+      # because the installation process is much slower on a QEMU VM!
+      - name: Install Docker
+        uses: ethanjli/pinspawn-action@v0.1.1
         with:
           image: rpi-os-image.img
-          machine: rpi-3b+
           run: |
-            # Install Docker:
             export DEBIAN_FRONTEND=noninteractive
             apt-get update
             apt-get install -y ca-certificates curl
@@ -110,8 +110,12 @@ jobs:
             apt-get install -y \
               docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-            # Pre-download a container:
-            sudo docker pull cgr.dev/chainguard/crane:latest
+      - name: Pull a container with Docker
+        uses: ./
+        with:
+          image: rpi-os-image.img
+          machine: rpi-3b+
+          run: docker pull cgr.dev/chainguard/crane:latest
 
       - name: Run pre-downloaded container
         uses: ./
