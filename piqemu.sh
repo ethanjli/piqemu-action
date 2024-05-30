@@ -238,7 +238,6 @@ echo "Running VM with boot..."
 # We use eval to work around word splitting in strings inside quotes in args:
 unmount_image "$device" "$sysroot"
 eval "sudo qemu-system-aarch64 $args"
-sysroot="$(sudo mktemp -d --tmpdir=/mnt sysroot.XXXXXXX)"
 device="$(mount_image "$image" "$sysroot")"
 
 # Restore the initial state of userconfig.service
@@ -257,7 +256,7 @@ sudo systemd-nspawn --directory "$sysroot" --quiet \
 sudo rm -f "$boot_tmp_service"
 
 # Check the return code of the shell script
-sudo ls "$sysroot/var/lib"
+sudo ls -l "$sysroot/var/lib"
 if [ ! "$(sudo cat "$boot_tmp_result" > /dev/null)" ]; then
   echo "Error: $boot_run_service did not store a result indicating success/failure!"
   exit 1
