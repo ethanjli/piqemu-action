@@ -192,6 +192,27 @@ vm_boot_tmp_service="${boot_tmp_service#"$sysroot/etc/systemd/system/"}"
 sudo systemd-nspawn --directory "$sysroot" --quiet \
   systemctl enable "$vm_boot_tmp_service"
 
+# Ensure that default.target is not graphical.target
+tmp_default_target="$(sudo mktemp --tmpdir="$sysroot/var/lib" piqemu-default-target.XXXXXXX)"
+sudo systemd-nspawn --directory "$sysroot" --quiet \
+  bash -c "systemctl get-default | sudo tee \"${tmp_default_target#"$sysroot"}\" > /dev/null"
+sudo rm "$tmp_default_target"
+default_target="$(cat "$tmp_default_target")"
+if [ "$default_target" == "graphical.target" ]; then
+  sudo systemd-nspawn --directory "$sysroot" --quiet \
+    systemctl set-default multi-user.target
+fi
+
+# Mask userconfig.service
+tmp_userconfig_enabled="$(sudo mktemp --tmpdir="$sysroot/var/lib" piqemu-userconfig-enabled.XXXXXXX)"
+sudo systemd-nspawn --directory "$sysroot" --quiet \
+  bash -c "systemctl is-enabled userconfig.service | sudo tee \"${tmp_userconfig_enabled#"$sysroot"}\" > /dev/null || true"
+userconfig_enabled="$(cat "$tmp_userconfig_enabled")"
+if [[ "$userconfig_enabled" != "not-found" && "$userconfig_enabled" != masked* ]]; then
+  sudo systemd-nspawn --directory "$sysroot" --quiet \
+    systemctl mask userconfig.service
+fi
+
 # Prepare files depending on machine type
 args="-append \"rw earlyprintk loglevel=8 console=ttyAMA0,115200 dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootdelay=1\" $args"
 args="-netdev user,id=net0,hostfwd=tcp::2222-:22 -device usb-net,netdev=net0 $args"
@@ -218,6 +239,16 @@ unmount_image "$device" "$sysroot"
 eval "sudo qemu-system-aarch64 $args"
 sysroot="$(sudo mktemp -d --tmpdir=/mnt sysroot.XXXXXXX)"
 device="$(mount_image "$image" "$sysroot")"
+
+# Restore the initial state of userconfig.service
+if [[ "$userconfig_enabled" != "not-found" && "$userconfig_enabled" != masked* ]]; then
+  sudo systemd-nspawn --directory "$sysroot" --quiet \
+    systemctl unmask userconfig.service
+fi
+
+# Restore the initial state of default.target
+sudo systemd-nspawn --directory "$sysroot" --quiet \
+  bash -c "systemctl set-default $default_target"
 
 # Clean up the injected service
 sudo systemd-nspawn --directory "$sysroot" --quiet \
