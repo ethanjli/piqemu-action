@@ -12,8 +12,6 @@ GitHub action (which you can use as a very similar substitute for this action) o
 
 ## Basic Usage Examples
 
-Note: the system in the VM will shut down after the specified commands finish running.
-
 ### Run shell commands as root
 
 ```yaml
@@ -162,7 +160,7 @@ Inputs:
   where partition 2 should be mounted as the root filesystem (i.e. `/`) and partition 1 should be
   mounted to `/boot`.
 
-` `machine` controls the hardware which the VM will emulate. Currently only the Raspberry Pi 3B+
+- `machine` controls the hardware which the VM will emulate. Currently only the Raspberry Pi 3B+
   (`rpi-3b+`) is supported; I can add support for other options depending on what people are
   interested in - so if you want some other machine type, please file a feature request!
 
