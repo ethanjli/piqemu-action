@@ -96,8 +96,9 @@ jobs:
           machine: rpi-3b+
           run: |
             # Install Docker:
+            export DEBIAN_FRONTEND=noninteractive
             apt-get update
-            apt-get install ca-certificates curl
+            apt-get install -y ca-certificates curl
             install -m 0755 -d /etc/apt/keyrings
             curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
             chmod a+r /etc/apt/keyrings/docker.asc
@@ -106,7 +107,7 @@ jobs:
               $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
               > /etc/apt/sources.list.d/docker.list
             apt-get update
-            apt-get install \
+            apt-get install -y \
               docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
             # Pre-download a container:
