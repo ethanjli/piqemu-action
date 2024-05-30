@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 
 mount_image() {
   local image
@@ -257,6 +257,7 @@ sudo systemd-nspawn --directory "$sysroot" --quiet \
 sudo rm -f "$boot_tmp_service"
 
 # Check the return code of the shell script
+sudo ls "$sysroot/var/lib"
 if [ ! "$(sudo cat "$boot_tmp_result" > /dev/null)" ]; then
   echo "Error: $boot_run_service did not store a result indicating success/failure!"
   exit 1
