@@ -101,8 +101,8 @@ GitHub action (which you can use as a very similar substitute for this action) o
 
 ### Interact with Docker in the booted VM
 
-Note: we use systemd-nspawn (via ethanjli/pinspawn) instead of QEMU to install Docker because the
-installation process is much slower on a QEMU VM!
+Note: we use systemd-nspawn (via ethanjli/pinspawn-action) instead of QEMU to install Docker because
+the installation process is much slower on a QEMU VM!
 
 ```yaml
 - name: Install Docker
