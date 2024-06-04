@@ -16,7 +16,7 @@ GitHub action (which you can use as a very similar substitute for this action) o
 
 ```yaml
 - name: Analyze systemd boot process
-  uses: ethanjli/piqemu-action@v0.1.0
+  uses: ethanjli/piqemu-action@v0.1.1
   with:
     image: rpi-os-image.img
     machine: rpi-3b+
@@ -51,7 +51,7 @@ GitHub action (which you can use as a very similar substitute for this action) o
 
 ```yaml
 - name: Run as user pi in booted container
-  uses: ethanjli/piqemu-action@v0.1.0
+  uses: ethanjli/piqemu-action@v0.1.1
   with:
     image: rpi-os-image.img
     machine: rpi-3b+
@@ -125,14 +125,14 @@ the installation process is much slower on a QEMU VM!
         docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 - name: Pull a container with Docker
-  uses: ethanjli/piqemu-action@v0.1.0
+  uses: ethanjli/piqemu-action@v0.1.1
   with:
     image: rpi-os-image.img
     machine: rpi-3b+
     run: docker pull cgr.dev/chainguard/crane:latest
 
 - name: Run pre-downloaded container
-  uses: ethanjli/piqemu-action@v0.1.0
+  uses: ethanjli/piqemu-action@v0.1.1
   with:
     image: rpi-os-image.img
     machine: rpi-3b+
